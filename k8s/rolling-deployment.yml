@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duoc-app-rolling # Este nombre es crítico para que el pipeline lo detecte
+  labels:
+    app: duoc-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: duoc-app
+  template:
+    metadata:
+      labels:
+        app: duoc-app
+    spec:
+      containers:
+      - name: duoc-app-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
