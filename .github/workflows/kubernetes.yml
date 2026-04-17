@@ -36,7 +36,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ github.event.inputs.aws_region }}
+          aws-region: ${{ vars.AWS_REGION }}
 
   # ✅ ESTA ES LA FORMA CORRECTA Y OFICIAL
       - name: Configurar Kubectl para EKS
