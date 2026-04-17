@@ -36,33 +36,33 @@ jobs:
           aws-region: ${{ github.event.inputs.aws_region }}
 
       - name: Configurar Kubectl para EKS
-        uses: aws-actions/amazon-eks-set-context@v2
+        uses: aws-actions/amazon-eks-set-context@v2 # 👈 Corregido
         with:
           cluster-name: ${{ github.event.inputs.eks_cluster_name }}
           aws-region: ${{ github.event.inputs.aws_region }}
       
-      # --- 🟦 BLUE/GREEN ESTRATEGIA ---
+      # --- 🟦 BLUE/GREEN (Cambio atómico) ---
       - name: 🟦 Ejecutar Blue/Green
         if: ${{ github.event.inputs.strategy == 'blue-green' }}
         run: |
           DEPLOYMENT_GREEN_NAME="duoc-app-green"
           SERVICE_NAME="duoc-app-bg-service"
-          YAML_FILE_GREEN="[K8S-YAML-PATH]" # 👈 Reemplaza por tu ruta real
+          YAML_FILE_GREEN="[TU-RUTA-AQUI]" # 👈 Pon tu ruta real
           
           echo "1. Desplegando GREEN..."
-          kubectl apply -f $YAML_FILE_GREEN
+          kubectl apply -f $YAML_FILE_GREEN # 👈 Corregido sin llaves
           kubectl rollout status deployment/$DEPLOYMENT_GREEN_NAME --timeout=300s
           
           echo "2. Ejecutando Switch: BLUE -> GREEN..."
           kubectl patch service $SERVICE_NAME -p '{"spec": {"selector": {"version": "green"}}}'
 
-      # --- 🐥 CANARY ESTRATEGIA ---
+      # --- 🐥 CANARY (Escalamiento gradual) ---
       - name: 🐥 Ejecutar Canary
         if: ${{ github.event.inputs.strategy == 'canary' }}
         run: |
           DEPLOYMENT_CANARY_NAME="duoc-app-canary-v2"
           STABLE_DEPLOYMENT_NAME="duoc-app-stable-v1"
-          YAML_FILE_CANARY="[K8S-YAML-PATH]" # 👈 Reemplaza por tu ruta real
+          YAML_FILE_CANARY="[TU-RUTA-AQUI]" # 👈 Pon tu ruta real
           TOTAL_REPLICAS=3 
           
           echo "1. Desplegando CANARY..."
