@@ -78,8 +78,8 @@ jobs:
           YAML_FILE_GREEN="[K8S-YAML-PATH]"
           
           echo "1. Desplegando el entorno GREEN (Inactivo)..."
-          kubectl apply -f ${{ YAML_FILE_GREEN }}
-          kubectl rollout status deployment/${{ DEPLOYMENT_GREEN_NAME }} --timeout=300s
+          kubectl apply -f ${{ vars.YAML_FILE_GREEN }}
+          kubectl rollout status deployment/${{ vars.DEPLOYMENT_GREEN_NAME }} --timeout=300s
           echo "✅ Rollout de GREEN completado."
           
           echo "2. Ventana de Prueba/Observación (120 segundos)..."
