@@ -43,15 +43,15 @@ jobs:
         run: |
           aws eks update-kubeconfig --name duoc-eks-cluster-cli --region us-east-1
       
-      # -----------------------------------------------------------
+# -----------------------------------------------------------
       # 2.1. 🔄 ROLLING UPDATE (Comportamiento por defecto de K8s)
       # -----------------------------------------------------------
       - name: 🔄 Ejecutar Rolling Update (Default)
         if: ${{ github.event.inputs.strategy == 'rolling-update' }}
         run: |
           echo "Aplicando YAML para Rolling Update (Actualización gradual)..."
-          # Corrección: Se utiliza la variable del repositorio en lugar del marcador de posición literal
-          kubectl apply -f ${{ vars.YAML_FILE_ROLLING }}
+          # Corrección: Ruta explícita al archivo YAML en su repositorio
+          kubectl apply -f k8s/rolling-deployment.yml 
           kubectl rollout status deployment/duoc-app-rolling --timeout=300s
           echo "✅ Rolling Update completado."
 
