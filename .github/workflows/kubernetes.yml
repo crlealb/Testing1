@@ -3,7 +3,7 @@ name: Despliegue EKS - Estrategias de Rollout
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
     inputs:
       strategy:
