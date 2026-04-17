@@ -38,11 +38,13 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ github.event.inputs.aws_region }}
 
+  # ✅ ESTA ES LA FORMA CORRECTA Y OFICIAL
       - name: Configurar Kubectl para EKS
-        uses: aws-actions/eks-set-context@v4
-        with:
-          cluster-name: ${{ github.event.inputs.eks_cluster_name }}
-          aws-region: ${{ github.event.inputs.aws_region }}
+        run: |
+          aws eks update-kubeconfig --name ${{ github.event.inputs.eks_cluster_name }} --region ${{ github.event.inputs.aws_region }}
+          with:
+            cluster-name: ${{ github.event.inputs.eks_cluster_name }}
+            aws-region: ${{ github.event.inputs.aws_region }}
       
       # -----------------------------------------------------------
       # 2.1. 🔄 ROLLING UPDATE (Comportamiento por defecto de K8s)
