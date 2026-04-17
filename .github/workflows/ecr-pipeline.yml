@@ -5,12 +5,13 @@ name: ECR Build & Push
 on:
   push:
     branches:
-      - main
+      - develop
   release:
     types: [published]
 
 jobs:
   build-and-push:
+    if: ${{ github.event_name != 'pull_request' }}
     name: Build, Tag and Push to ECR
     runs-on: ubuntu-latest
     
