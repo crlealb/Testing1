@@ -36,22 +36,22 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ github.event.inputs.aws_region }}
+          aws-region: ${{ vars.AWS_REGION }}
 
+  # ✅ ESTA ES LA FORMA CORRECTA Y OFICIAL
       - name: Configurar Kubectl para EKS
-        uses: aws-actions/eks-set-context@v4
-        with:
-          cluster-name: ${{ github.event.inputs.eks_cluster_name }}
-          aws-region: ${{ github.event.inputs.aws_region }}
+        run: |
+          aws eks update-kubeconfig --name duoc-eks-cluster-cli --region us-east-1
       
-      # -----------------------------------------------------------
+# -----------------------------------------------------------
       # 2.1. 🔄 ROLLING UPDATE (Comportamiento por defecto de K8s)
       # -----------------------------------------------------------
       - name: 🔄 Ejecutar Rolling Update (Default)
         if: ${{ github.event.inputs.strategy == 'rolling-update' }}
         run: |
           echo "Aplicando YAML para Rolling Update (Actualización gradual)..."
-          kubectl apply -f [K8S-YAML-PATH]
+          # Corrección: Ruta explícita al archivo YAML en su repositorio
+          kubectl apply -f k8s/rolling-deployment.yml 
           kubectl rollout status deployment/duoc-app-rolling --timeout=300s
           echo "✅ Rolling Update completado."
 
@@ -62,7 +62,8 @@ jobs:
         if: ${{ github.event.inputs.strategy == 'recreate' }}
         run: |
           echo "Aplicando YAML para Recreate (All-in-once)..."
-          kubectl apply -f [K8S-YAML-PATH]
+          # Corrección: Se utiliza la variable del repositorio en lugar del marcador de posición literal
+          kubectl apply -f ${{ vars.YAML_FILE_RECREATE }}
           kubectl rollout status deployment/duoc-app-recreate --timeout=300s
           echo "✅ Recreate completado."
           
@@ -72,13 +73,13 @@ jobs:
       - name: 🟦 Ejecutar Blue/Green (kubectl patch)
         if: ${{ github.event.inputs.strategy == 'blue-green' }}
         run: |
-          # Definimos variables de shell (sin ${{ }})
           DEPLOYMENT_GREEN_NAME="duoc-app-green"
           SERVICE_NAME="duoc-app-bg-service"
-          YAML_FILE_GREEN="[K8S-YAML-PATH]"
           
           echo "1. Desplegando el entorno GREEN (Inactivo)..."
-          kubectl apply -f $YAML_FILE_GREEN
+          kubectl apply -f ${{ vars.YAML_FILE_GREEN }}
+          
+          # Uso de $ para variable local de Bash
           kubectl rollout status deployment/$DEPLOYMENT_GREEN_NAME --timeout=300s
           echo "✅ Rollout de GREEN completado."
           
@@ -87,6 +88,7 @@ jobs:
           echo "✅ Prueba simulada completada."
           
           echo "3. Ejecutando el Switch de tráfico: BLUE -> GREEN..."
+          # Uso de $ para variable local de Bash
           kubectl patch service $SERVICE_NAME -p '{"spec": {"selector": {"version": "green"}}}'
           echo "✅ Switch de tráfico completado."
           
@@ -96,14 +98,14 @@ jobs:
       - name: 🐥 Ejecutar Canary (kubectl scale)
         if: ${{ github.event.inputs.strategy == 'canary' }}
         run: |
-          # Definimos variables de shell
           DEPLOYMENT_CANARY_NAME="duoc-app-canary-v2"
           STABLE_DEPLOYMENT_NAME="duoc-app-stable-v1"
-          YAML_FILE_CANARY="[K8S-YAML-PATH]"
           TOTAL_REPLICAS=3 
           
           echo "1. Desplegando el entorno CANARY (10% de tráfico)..."
-          kubectl apply -f $YAML_FILE_CANARY
+          kubectl apply -f ${{ vars.YAML_FILE_CANARY }}
+          
+          # Uso de $ para variables locales de Bash
           kubectl rollout status deployment/$DEPLOYMENT_CANARY_NAME --timeout=300s
           echo "✅ Rollout de CANARY inicial completado."
           
@@ -112,6 +114,7 @@ jobs:
           echo "✅ Prueba simulada completada."
           
           echo "3. PROMOCIÓN: Escalar V2 a $TOTAL_REPLICAS y V1 a 0..."
+          # Uso de $ para variables locales de Bash
           kubectl scale deployment/$DEPLOYMENT_CANARY_NAME --replicas=$TOTAL_REPLICAS
           kubectl scale deployment/$STABLE_DEPLOYMENT_NAME --replicas=0
           
